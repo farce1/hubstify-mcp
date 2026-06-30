@@ -54,12 +54,12 @@ uv sync
 
 Create one at
 [developer.hubstaff.com/account/personal-access-tokens](https://developer.hubstaff.com/account/personal-access-tokens).
-The token is a long-lived refresh token; set it as `HUBSTAFF_REFRESH_TOKEN`.
+The token is a long-lived refresh token; set it as `HUBSTAFF_PERSONAL_ACCESS_TOKEN`.
 
 ### 3. Run
 
 ```bash
-HUBSTAFF_REFRESH_TOKEN=your_pat uv run hubstaff-mcp
+HUBSTAFF_PERSONAL_ACCESS_TOKEN=your_pat uv run hubstaff-mcp
 ```
 
 The server speaks MCP over **stdio**. To connect it to Claude Code, Claude
@@ -69,13 +69,13 @@ Desktop/Cowork, Cursor or Codex, see **[INTEGRATIONS.md](./INTEGRATIONS.md)**.
 
 | Variable | Required | Default | Description |
 | --- | --- | --- | --- |
-| `HUBSTAFF_REFRESH_TOKEN` | ✅ | — | Personal Access Token (refresh token) |
+| `HUBSTAFF_PERSONAL_ACCESS_TOKEN` | ✅ | — | Personal Access Token (refresh token) |
 | `HUBSTAFF_TOKEN_STORE` | — | `~/.hubstaff-mcp/tokens.json` | Where the rotated token cache is persisted |
 | `DEFAULT_TIMEZONE` | — | `UTC` | IANA timezone for resolving "today"/"this week" and localizing naive start times |
 
 > Hubstaff rotates the refresh token on every exchange; this server persists the
 > newest token (mode `0600`) so it survives restarts. If you revoke the token,
-> update `HUBSTAFF_REFRESH_TOKEN` and delete the token store file.
+> update `HUBSTAFF_PERSONAL_ACCESS_TOKEN` and delete the token store file.
 
 ## Development
 

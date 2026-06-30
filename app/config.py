@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     mcp_server_name: str = "Hubstaff MCP"
 
     # Hubstaff Personal Access Token (acts as a long-lived, rotating refresh token).
-    hubstaff_refresh_token: str = ""
+    hubstaff_personal_access_token: str = ""
     hubstaff_token_store: Path = Path.home() / ".hubstaff-mcp" / "tokens.json"
     hubstaff_api_base: str = "https://api.hubstaff.com/v2"
     hubstaff_token_url: str = "https://account.hubstaff.com/access_tokens"

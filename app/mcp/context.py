@@ -59,7 +59,7 @@ def build_context() -> Context:
     http = httpx.AsyncClient(timeout=30)
     tokens = TokenManager(
         http=http,
-        refresh_token=settings.hubstaff_refresh_token,
+        refresh_token=settings.hubstaff_personal_access_token,
         token_url=settings.hubstaff_token_url,
         token_store=settings.hubstaff_token_store,
     )

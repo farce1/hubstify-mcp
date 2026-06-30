@@ -4,7 +4,7 @@
       "command": "uv",
       "args": ["--directory", "/absolute/path/to/hubstify-mcp", "run", "hubstaff-mcp"],
       "env": {
-        "HUBSTAFF_REFRESH_TOKEN": "your_pat_here"
+        "HUBSTAFF_PERSONAL_ACCESS_TOKEN": "your_pat_here"
       }
     }
   }

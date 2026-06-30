@@ -8,7 +8,7 @@ uv --directory /absolute/path/to/hubstify-mcp run hubstaff-mcp
 ```
 
 Replace `/absolute/path/to/hubstify-mcp` with the real path to your clone, and set
-`HUBSTAFF_REFRESH_TOKEN` to your Personal Access Token
+`HUBSTAFF_PERSONAL_ACCESS_TOKEN` to your Personal Access Token
 ([create one here](https://developer.hubstaff.com/account/personal-access-tokens)).
 
 Prerequisites: [`uv`](https://docs.astral.sh/uv/) installed and `uv sync` run once
@@ -22,7 +22,7 @@ Add the server from the CLI (run from anywhere):
 
 ```bash
 claude mcp add hubstaff \
-  -e HUBSTAFF_REFRESH_TOKEN=your_pat_here \
+  -e HUBSTAFF_PERSONAL_ACCESS_TOKEN=your_pat_here \
   -- uv --directory /absolute/path/to/hubstify-mcp run hubstaff-mcp
 ```
 
@@ -45,7 +45,7 @@ configuration) reads `claude_desktop_config.json`:
     "hubstaff": {
       "command": "uv",
       "args": ["--directory", "/absolute/path/to/hubstify-mcp", "run", "hubstaff-mcp"],
-      "env": { "HUBSTAFF_REFRESH_TOKEN": "your_pat_here" }
+      "env": { "HUBSTAFF_PERSONAL_ACCESS_TOKEN": "your_pat_here" }
     }
   }
 }
@@ -66,7 +66,7 @@ Create `.cursor/mcp.json` in your project (or `~/.cursor/mcp.json` for all proje
     "hubstaff": {
       "command": "uv",
       "args": ["--directory", "/absolute/path/to/hubstify-mcp", "run", "hubstaff-mcp"],
-      "env": { "HUBSTAFF_REFRESH_TOKEN": "your_pat_here" }
+      "env": { "HUBSTAFF_PERSONAL_ACCESS_TOKEN": "your_pat_here" }
     }
   }
 }
@@ -84,7 +84,7 @@ Codex CLI reads `~/.codex/config.toml`. Add an `mcp_servers` entry:
 [mcp_servers.hubstaff]
 command = "uv"
 args = ["--directory", "/absolute/path/to/hubstify-mcp", "run", "hubstaff-mcp"]
-env = { HUBSTAFF_REFRESH_TOKEN = "your_pat_here" }
+env = { HUBSTAFF_PERSONAL_ACCESS_TOKEN = "your_pat_here" }
 ```
 
 ---
@@ -104,10 +104,10 @@ Once connected, try:
 
 ## Troubleshooting
 
-- **`HUBSTAFF_REFRESH_TOKEN is not set`** — the env var didn't reach the server;
+- **`HUBSTAFF_PERSONAL_ACCESS_TOKEN is not set`** — the env var didn't reach the server;
   check the `env` block in your client config.
 - **Auth errors after it worked before** — the refresh token may have been revoked
-  or rotated out of band. Update `HUBSTAFF_REFRESH_TOKEN` and delete
+  or rotated out of band. Update `HUBSTAFF_PERSONAL_ACCESS_TOKEN` and delete
   `~/.hubstaff-mcp/tokens.json`.
 - **Wrong day for "today"/"this week"** — set `DEFAULT_TIMEZONE` (e.g.
   `Europe/Warsaw`) in the `env` block; Hubstaff buckets daily activity by timezone.
