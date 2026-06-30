@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "hubstaff": {
-      "command": "uv",
-      "args": ["--directory", "/absolute/path/to/hubstify-mcp", "run", "hubstaff-mcp"],
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/farce1/hubstify-mcp.git", "hubstaff-mcp"],
       "env": {
         "HUBSTAFF_PERSONAL_ACCESS_TOKEN": "your_pat_here"
       }
