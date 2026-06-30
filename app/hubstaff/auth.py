@@ -40,11 +40,13 @@ class TokenManager:
         token_url: str,
         token_store: Path,
         now: Callable[[], float] = time.time,
+        missing_token_hint: str = "No Hubstaff refresh token is configured.",
     ):
         self._http = http
         self._token_url = token_url
         self._token_store = Path(token_store).expanduser()
         self._now = now
+        self._missing_token_hint = missing_token_hint
         self._lock = asyncio.Lock()
         self._token = self._load() or TokenSet(refresh_token=refresh_token)
 
@@ -67,10 +69,7 @@ class TokenManager:
 
     async def _exchange(self) -> str:
         if not self._token.refresh_token:
-            raise HubstaffAuthError(
-                "HUBSTAFF_PERSONAL_ACCESS_TOKEN is not set. Create a Personal Access Token at "
-                "https://developer.hubstaff.com/account/personal-access-tokens",
-            )
+            raise HubstaffAuthError(self._missing_token_hint)
         try:
             response = await self._http.post(
                 self._token_url,

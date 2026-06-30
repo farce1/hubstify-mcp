@@ -2,11 +2,13 @@ import json
 from datetime import date, datetime, timezone
 from urllib.parse import unquote
 
+import pytest
 import respx
 from httpx import Response
 
 from app.domain.time_entry import NewTimeEntry
 from app.domain.value_objects import DateRange
+from app.hubstaff.errors import HubstaffAPIError
 from app.repositories.activity_repository import ActivityRepository
 from app.repositories.member_repository import MemberRepository
 from app.repositories.organization_repository import OrganizationRepository
@@ -24,6 +26,13 @@ async def test_user_repository_get_current_user(api):
     respx.get(f"{BASE}/users/me").mock(return_value=Response(200, json={"user": {"id": 5, "name": "Jo"}}))
     user = await UserRepository(api).get_current_user()
     assert (user.id, user.name) == (5, "Jo")
+
+
+@respx.mock
+async def test_user_repository_raises_on_missing_envelope(api):
+    respx.get(f"{BASE}/users/me").mock(return_value=Response(200, json={"unexpected": 1}))
+    with pytest.raises(HubstaffAPIError):
+        await UserRepository(api).get_current_user()
 
 
 @respx.mock
