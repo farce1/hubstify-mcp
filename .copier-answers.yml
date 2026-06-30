@@ -1,0 +1,10 @@
+# Changes here will be overwritten by Copier
+_commit: 0.4.1
+_src_path: https://github.com/the-momentum/python-ai-kit
+default_python_version: '3.13'
+project_description: Hubstaff MCP server — operate Hubstaff time tracking, projects,
+    tasks and timesheets through any LLM
+project_name: hubstaff-mcp
+project_type: mcp-server
+python_versions:
+- '3.13'
