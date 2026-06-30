@@ -42,23 +42,39 @@ Built on [FastMCP](https://gofastmcp.com) and scaffolded from
 
 ## Setup
 
-### 1. Install [`uv`](https://docs.astral.sh/uv/) and build
+First, get a Hubstaff Personal Access Token at
+[developer.hubstaff.com/account/personal-access-tokens](https://developer.hubstaff.com/account/personal-access-tokens).
+The token is a long-lived refresh token; set it as `HUBSTAFF_PERSONAL_ACCESS_TOKEN`.
+
+### Quick start (no clone)
+
+With [`uv`](https://docs.astral.sh/uv/) installed, run the server straight from
+GitHub — `uvx` fetches, builds and runs it in one shot (deps are cached after the
+first run):
+
+```bash
+HUBSTAFF_PERSONAL_ACCESS_TOKEN=your_pat uvx --from git+https://github.com/farce1/hubstify-mcp.git hubstaff-mcp
+```
+
+Prefer not to use `uvx`? Any of these expose the same `hubstaff-mcp` command:
+
+```bash
+# Persistent install on your PATH (uv)
+uv tool install git+https://github.com/farce1/hubstify-mcp.git
+
+# pipx (run-once, cached)
+pipx run --spec git+https://github.com/farce1/hubstify-mcp.git hubstaff-mcp
+
+# plain pip into a venv
+pip install git+https://github.com/farce1/hubstify-mcp.git
+```
+
+### From source (development)
 
 ```bash
 git clone https://github.com/farce1/hubstify-mcp.git
 cd hubstify-mcp
 uv sync
-```
-
-### 2. Get a Hubstaff Personal Access Token
-
-Create one at
-[developer.hubstaff.com/account/personal-access-tokens](https://developer.hubstaff.com/account/personal-access-tokens).
-The token is a long-lived refresh token; set it as `HUBSTAFF_PERSONAL_ACCESS_TOKEN`.
-
-### 3. Run
-
-```bash
 HUBSTAFF_PERSONAL_ACCESS_TOKEN=your_pat uv run hubstaff-mcp
 ```
 
@@ -72,10 +88,32 @@ Desktop/Cowork, Cursor or Codex, see **[INTEGRATIONS.md](./INTEGRATIONS.md)**.
 | `HUBSTAFF_PERSONAL_ACCESS_TOKEN` | ✅ | — | Personal Access Token (refresh token) |
 | `HUBSTAFF_TOKEN_STORE` | — | `~/.hubstaff-mcp/tokens.json` | Where the rotated token cache is persisted |
 | `DEFAULT_TIMEZONE` | — | `UTC` | IANA timezone for resolving "today"/"this week" and localizing naive start times |
+| `MCP_TRANSPORT` | — | `stdio` | `stdio` for local clients, or `http` to self-host (see below) |
+| `MCP_HOST` | — | `127.0.0.1` | Bind address when `MCP_TRANSPORT=http` |
+| `MCP_PORT` | — | `8000` | Port when `MCP_TRANSPORT=http` |
 
 > Hubstaff rotates the refresh token on every exchange; this server persists the
 > newest token (mode `0600`) so it survives restarts. If you revoke the token,
 > update `HUBSTAFF_PERSONAL_ACCESS_TOKEN` and delete the token store file.
+
+## Self-hosting over HTTP
+
+By default the server talks **stdio** (the client spawns it as a subprocess). To
+run it as a long-lived HTTP service instead, set `MCP_TRANSPORT=http`:
+
+```bash
+HUBSTAFF_PERSONAL_ACCESS_TOKEN=your_pat MCP_TRANSPORT=http MCP_PORT=8000 uvx --from git+https://github.com/farce1/hubstify-mcp.git hubstaff-mcp
+```
+
+The endpoint is then `http://<host>:<port>/mcp`, which any HTTP-capable MCP client
+can connect to.
+
+> ⚠️ **Single-user only.** The server acts as the *one* identity behind
+> `HUBSTAFF_PERSONAL_ACCESS_TOKEN` — every request reads and writes that account's
+> Hubstaff data. Do **not** expose this endpoint to other people or the public
+> internet; keep it bound to localhost or your private network and put your own
+> authentication in front of it. Multi-tenant hosting (each user with their own
+> Hubstaff token) is not yet supported.
 
 ## Development
 

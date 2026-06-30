@@ -15,7 +15,10 @@ mcp.mount(mcp_router)
 
 
 def run() -> None:
-    mcp.run()
+    if settings.mcp_transport == "http":
+        mcp.run(transport="http", host=settings.mcp_host, port=settings.mcp_port)
+    else:
+        mcp.run()
 
 
 if __name__ == "__main__":

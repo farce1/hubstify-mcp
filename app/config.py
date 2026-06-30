@@ -15,6 +15,11 @@ class Settings(BaseSettings):
 
     mcp_server_name: str = "Hubstaff MCP"
 
+    # Transport: "stdio" (default, for local MCP clients) or "http" (self-hosting).
+    mcp_transport: str = "stdio"
+    mcp_host: str = "127.0.0.1"
+    mcp_port: int = 8000
+
     # Hubstaff Personal Access Token (acts as a long-lived, rotating refresh token).
     hubstaff_personal_access_token: str = ""
     hubstaff_token_store: Path = Path.home() / ".hubstaff-mcp" / "tokens.json"
@@ -33,6 +38,14 @@ class Settings(BaseSettings):
             raise ValueError(
                 f"Invalid default_timezone {value!r}; use an IANA name like 'UTC' or 'Europe/Warsaw'"
             ) from exc
+        return value
+
+    @field_validator("mcp_transport")
+    @classmethod
+    def _validate_transport(cls, value: str) -> str:
+        allowed = {"stdio", "http"}
+        if value not in allowed:
+            raise ValueError(f"Invalid mcp_transport {value!r}; choose one of {sorted(allowed)}")
         return value
 
 

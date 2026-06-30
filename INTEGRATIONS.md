@@ -1,24 +1,38 @@
 # Integrations
 
-Connect `hubstaff-mcp` to your MCP client. The server runs over **stdio** and is
-launched with `uv`, so every client uses the same command:
+Connect `hubstaff-mcp` to your MCP client. The server runs over **stdio**. Set
+`HUBSTAFF_PERSONAL_ACCESS_TOKEN` to your Personal Access Token
+([create one here](https://developer.hubstaff.com/account/personal-access-tokens)).
+
+The simplest launch command needs no clone — `uvx` runs the server straight from
+GitHub:
+
+```
+uvx --from git+https://github.com/farce1/hubstify-mcp.git hubstaff-mcp
+```
+
+If you cloned the repo and ran `uv sync`, the equivalent local command is:
 
 ```
 uv --directory /absolute/path/to/hubstify-mcp run hubstaff-mcp
 ```
 
-Replace `/absolute/path/to/hubstify-mcp` with the real path to your clone, and set
-`HUBSTAFF_PERSONAL_ACCESS_TOKEN` to your Personal Access Token
-([create one here](https://developer.hubstaff.com/account/personal-access-tokens)).
-
-Prerequisites: [`uv`](https://docs.astral.sh/uv/) installed and `uv sync` run once
-in the project directory.
+Either form works everywhere below — swap one `command`/`args` for the other.
+Prerequisite: [`uv`](https://docs.astral.sh/uv/) installed.
 
 ---
 
 ## Claude Code
 
-Add the server from the CLI (run from anywhere):
+Add the server from the CLI (run from anywhere, no clone needed):
+
+```bash
+claude mcp add hubstaff \
+  -e HUBSTAFF_PERSONAL_ACCESS_TOKEN=your_pat_here \
+  -- uvx --from git+https://github.com/farce1/hubstify-mcp.git hubstaff-mcp
+```
+
+Using a local clone instead? Swap the launch command:
 
 ```bash
 claude mcp add hubstaff \
