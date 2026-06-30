@@ -66,6 +66,11 @@ class TokenManager:
             return await self._exchange()
 
     async def _exchange(self) -> str:
+        if not self._token.refresh_token:
+            raise HubstaffAuthError(
+                "HUBSTAFF_REFRESH_TOKEN is not set. Create a Personal Access Token at "
+                "https://developer.hubstaff.com/account/personal-access-tokens",
+            )
         try:
             response = await self._http.post(
                 self._token_url,

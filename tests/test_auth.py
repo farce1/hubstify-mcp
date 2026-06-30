@@ -159,6 +159,15 @@ async def test_success_body_without_access_token_raises_auth_error(tmp_path):
 
 
 @respx.mock
+async def test_missing_refresh_token_raises_clear_error(tmp_path):
+    route = respx.post(TOKEN_URL)
+    async with httpx.AsyncClient() as http:
+        with pytest.raises(HubstaffAuthError, match="HUBSTAFF_REFRESH_TOKEN"):
+            await _manager(http, tmp_path, refresh_token="").get_access_token()
+    assert not route.called
+
+
+@respx.mock
 async def test_non_dict_error_body_raises_auth_error(tmp_path):
     respx.post(TOKEN_URL).mock(return_value=Response(400, json="rate_limit"))
     async with httpx.AsyncClient() as http:
