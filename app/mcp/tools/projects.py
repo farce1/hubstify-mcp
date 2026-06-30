@@ -10,7 +10,7 @@ projects_router = FastMCP(name="Projects")
 @projects_router.tool
 @safe
 async def get_projects(organization_id: int | None = None, status: str | None = None) -> str:
-    """List projects in an organization (defaults to your primary one). Optional status: active, archived, or all."""
+    """List projects in an organization (defaults to your default org). Optional status: active, archived, or all."""
     ctx = get_context()
     org_id = organization_id if organization_id is not None else await ctx.default_organization_id()
     projects = await ctx.projects.list_projects(org_id, status)

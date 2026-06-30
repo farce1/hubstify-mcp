@@ -1,16 +1,8 @@
 import respx
-from fastmcp import Client
 from httpx import Response
 
-from app.main import mcp
-
-BASE = "https://api.hubstaff.com/v2"
-
-
-async def _call(tool: str, args: dict) -> str:
-    async with Client(mcp) as client:
-        result = await client.call_tool(tool, args)
-    return result.content[0].text
+from tests._helpers import BASE
+from tests._helpers import call_tool as _call
 
 
 @respx.mock
@@ -55,6 +47,22 @@ async def test_get_projects_with_explicit_org(tool_context):
     text = await _call("get_projects", {"organization_id": 7})
     assert "Solo" in text
     assert route.called
+
+
+@respx.mock
+async def test_default_org_override_skips_org_lookup(tool_context, monkeypatch):
+    import app.config
+
+    monkeypatch.setattr(app.config.settings, "hubstaff_default_organization_id", 42)
+    projects = respx.get(f"{BASE}/organizations/42/projects").mock(
+        return_value=Response(200, json={"projects": [], "pagination": {}}),
+    )
+    orgs = respx.get(f"{BASE}/organizations").mock(
+        return_value=Response(200, json={"organizations": [], "pagination": {}}),
+    )
+    await _call("get_projects", {})
+    assert projects.called
+    assert not orgs.called
 
 
 @respx.mock

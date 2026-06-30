@@ -25,9 +25,10 @@ class Settings(BaseSettings):
     hubstaff_token_store: Path = Path.home() / ".hubstaff-mcp" / "tokens.json"
     hubstaff_api_base: str = "https://api.hubstaff.com/v2"
     hubstaff_token_url: str = "https://account.hubstaff.com/access_tokens"
+    # Organization used when a tool isn't given one. Defaults to the first one returned.
+    hubstaff_default_organization_id: int | None = None
 
     default_timezone: str = "UTC"
-    page_limit: int = 100
 
     @field_validator("default_timezone")
     @classmethod

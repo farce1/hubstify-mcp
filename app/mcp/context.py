@@ -40,10 +40,13 @@ class Context:
 
     async def default_organization_id(self) -> int:
         if self._default_organization_id is None:
-            organizations = await self.organizations.list_organizations()
-            if not organizations:
-                raise HubstaffError("No Hubstaff organizations are available for this account.")
-            self._default_organization_id = organizations[0].id
+            if settings.hubstaff_default_organization_id is not None:
+                self._default_organization_id = settings.hubstaff_default_organization_id
+            else:
+                organizations = await self.organizations.list_organizations()
+                if not organizations:
+                    raise HubstaffError("No Hubstaff organizations are available for this account.")
+                self._default_organization_id = organizations[0].id
         return self._default_organization_id
 
     async def project_names(self, organization_id: int) -> dict[int, str]:

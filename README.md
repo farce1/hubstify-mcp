@@ -25,7 +25,7 @@ Built on [FastMCP](https://gofastmcp.com) and scaffolded from
 | --- | --- | --- |
 | `get_current_user` | read | The authenticated user (you) |
 | `get_organizations` | read | Organizations you belong to |
-| `get_projects` | read | Projects in an organization (defaults to your primary) |
+| `get_projects` | read | Projects in an organization (defaults to your default org) |
 | `get_tasks` | read | Tasks in a project |
 | `get_members` | read | Members of an organization |
 | `get_teams` | read | Teams in an organization |
@@ -88,6 +88,7 @@ Desktop/Cowork, Cursor or Codex, see **[INTEGRATIONS.md](./INTEGRATIONS.md)**.
 | `HUBSTAFF_PERSONAL_ACCESS_TOKEN` | ✅ | — | Personal Access Token (refresh token) |
 | `HUBSTAFF_TOKEN_STORE` | — | `~/.hubstaff-mcp/tokens.json` | Where the rotated token cache is persisted |
 | `DEFAULT_TIMEZONE` | — | `UTC` | IANA timezone for resolving "today"/"this week" and localizing naive start times |
+| `HUBSTAFF_DEFAULT_ORGANIZATION_ID` | — | first org | Organization id used when a tool isn't given one |
 | `MCP_TRANSPORT` | — | `stdio` | `stdio` for local clients, or `http` to self-host (see below) |
 | `MCP_HOST` | — | `127.0.0.1` | Bind address when `MCP_TRANSPORT=http` |
 | `MCP_PORT` | — | `8000` | Port when `MCP_TRANSPORT=http` |
