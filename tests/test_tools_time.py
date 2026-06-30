@@ -1,25 +1,15 @@
 from urllib.parse import unquote
 
 import respx
-from fastmcp import Client
 from httpx import Response
 
-from app.main import mcp
-
-BASE = "https://api.hubstaff.com/v2"
-
-
-async def _call(tool: str, args: dict) -> str:
-    async with Client(mcp) as client:
-        result = await client.call_tool(tool, args)
-    return result.content[0].text
+from tests._helpers import BASE, mock_me, mock_projects
+from tests._helpers import call_tool as _call
 
 
 def _mock_identity_and_projects():
-    respx.get(f"{BASE}/users/me").mock(return_value=Response(200, json={"user": {"id": 7, "name": "Jo"}}))
-    respx.get(f"{BASE}/organizations/9/projects").mock(
-        return_value=Response(200, json={"projects": [{"id": 1, "name": "Acme"}], "pagination": {}}),
-    )
+    mock_me()
+    mock_projects()
 
 
 @respx.mock

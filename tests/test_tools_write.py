@@ -1,22 +1,11 @@
 import json
 
 import respx
-from fastmcp import Client
 from httpx import Response
 
-from app.main import mcp
-
-BASE = "https://api.hubstaff.com/v2"
-
-
-async def _call(tool: str, args: dict) -> str:
-    async with Client(mcp) as client:
-        result = await client.call_tool(tool, args)
-    return result.content[0].text
-
-
-def _mock_me():
-    respx.get(f"{BASE}/users/me").mock(return_value=Response(200, json={"user": {"id": 7, "name": "Jo"}}))
+from tests._helpers import BASE
+from tests._helpers import call_tool as _call
+from tests._helpers import mock_me as _mock_me
 
 
 @respx.mock

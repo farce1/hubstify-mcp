@@ -3,8 +3,7 @@ import pytest
 
 from app.hubstaff.client import HubstaffClient
 from app.mcp import context as context_module
-
-BASE = "https://api.hubstaff.com/v2"
+from tests._helpers import BASE
 
 
 class StaticTokens:

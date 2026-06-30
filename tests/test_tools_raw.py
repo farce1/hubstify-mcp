@@ -1,16 +1,8 @@
 import respx
-from fastmcp import Client
 from httpx import Response
 
-from app.main import mcp
-
-BASE = "https://api.hubstaff.com/v2"
-
-
-async def _call(tool: str, args: dict) -> str:
-    async with Client(mcp) as client:
-        result = await client.call_tool(tool, args)
-    return result.content[0].text
+from tests._helpers import BASE
+from tests._helpers import call_tool as _call
 
 
 @respx.mock

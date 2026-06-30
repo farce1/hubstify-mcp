@@ -25,7 +25,7 @@ async def test_get_organizations(tool_context):
 
 
 @respx.mock
-async def test_get_projects_defaults_to_primary_org(tool_context):
+async def test_get_projects_defaults_to_first_org(tool_context):
     respx.get(f"{BASE}/organizations").mock(
         return_value=Response(200, json={"organizations": [{"id": 9, "name": "Acme"}], "pagination": {}}),
     )
