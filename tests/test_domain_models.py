@@ -34,6 +34,13 @@ def test_daily_activity_maps_tracked_seconds():
     assert activity.date == date(2026, 6, 30)
 
 
+def test_daily_activity_parses_billable_as_seconds():
+    activity = DailyActivity.model_validate(
+        {"id": 1, "date": "2026-06-30", "user_id": 7, "project_id": 3, "tracked": 28800, "billable": 28800},
+    )
+    assert activity.billable_seconds == 28800
+
+
 def test_new_time_entry_payload_omits_unset_optionals():
     entry = NewTimeEntry(
         project_id=3,

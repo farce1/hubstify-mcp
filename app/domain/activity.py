@@ -1,5 +1,7 @@
 from datetime import date, datetime
 
+from pydantic import Field
+
 from app.domain.base import HubstaffModel
 
 
@@ -13,7 +15,8 @@ class _ActivityBase(HubstaffModel):
     keyboard: int | None = None
     mouse: int | None = None
     overall: int | None = None
-    billable: bool | None = None
+    # Hubstaff returns this as billable *seconds* (e.g. 28800), not a boolean.
+    billable_seconds: int | None = Field(default=None, alias="billable")
 
 
 class Activity(_ActivityBase):
