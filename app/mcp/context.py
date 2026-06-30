@@ -31,6 +31,7 @@ class Context:
         self.timesheets = TimesheetService(self.activities)
         self._current_user_id: int | None = None
         self._default_organization_id: int | None = None
+        self._project_names: dict[int, dict[int, str]] = {}
 
     async def current_user_id(self) -> int:
         if self._current_user_id is None:
@@ -44,6 +45,12 @@ class Context:
                 raise HubstaffError("No Hubstaff organizations are available for this account.")
             self._default_organization_id = organizations[0].id
         return self._default_organization_id
+
+    async def project_names(self, organization_id: int) -> dict[int, str]:
+        if organization_id not in self._project_names:
+            projects = await self.projects.list_projects(organization_id, status="all")
+            self._project_names[organization_id] = {project.id: project.name for project in projects}
+        return self._project_names[organization_id]
 
 
 def build_context() -> Context:
