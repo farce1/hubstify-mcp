@@ -1,6 +1,8 @@
 from functools import lru_cache
 from pathlib import Path
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -21,6 +23,17 @@ class Settings(BaseSettings):
 
     default_timezone: str = "UTC"
     page_limit: int = 100
+
+    @field_validator("default_timezone")
+    @classmethod
+    def _validate_timezone(cls, value: str) -> str:
+        try:
+            ZoneInfo(value)
+        except (ZoneInfoNotFoundError, ValueError) as exc:
+            raise ValueError(
+                f"Invalid default_timezone {value!r}; use an IANA name like 'UTC' or 'Europe/Warsaw'"
+            ) from exc
+        return value
 
 
 @lru_cache
