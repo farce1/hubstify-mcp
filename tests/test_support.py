@@ -1,21 +1,26 @@
+import pytest
+from fastmcp.exceptions import ToolError
+
 from app.hubstaff.errors import HubstaffError
 from app.mcp.support import bullet_list, hours, safe
 
 
-async def test_safe_surfaces_hubstaff_error():
+async def test_safe_raises_tool_error_for_hubstaff_error():
     @safe
     async def boom() -> str:
         raise HubstaffError("api down")
 
-    assert await boom() == "Error: api down"
+    with pytest.raises(ToolError, match="api down"):
+        await boom()
 
 
-async def test_safe_surfaces_value_error():
+async def test_safe_raises_tool_error_for_value_error():
     @safe
     async def boom() -> str:
         raise ValueError("bad input")
 
-    assert await boom() == "Error: bad input"
+    with pytest.raises(ToolError, match="bad input"):
+        await boom()
 
 
 async def test_safe_passes_through_success():

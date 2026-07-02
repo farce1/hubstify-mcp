@@ -1,6 +1,8 @@
 import json
 
+import pytest
 import respx
+from fastmcp.exceptions import ToolError
 from httpx import Response
 
 from tests._helpers import BASE
@@ -58,8 +60,8 @@ async def test_log_time_passes_task_id(tool_context):
 
 
 async def test_log_time_rejects_bad_start_time(tool_context):
-    text = await _call("log_time", {"project_id": 1, "hours": 1, "start_time": "yesterday"})
-    assert text.startswith("Error:")
+    with pytest.raises(ToolError):
+        await _call("log_time", {"project_id": 1, "hours": 1, "start_time": "yesterday"})
 
 
 @respx.mock
@@ -72,9 +74,8 @@ async def test_log_time_includes_billable_false(tool_context):
 
 
 async def test_log_time_rejects_nonpositive_hours(tool_context):
-    text = await _call("log_time", {"project_id": 1, "hours": 0})
-    assert text.startswith("Error:")
-    assert "hours" in text
+    with pytest.raises(ToolError, match="hours"):
+        await _call("log_time", {"project_id": 1, "hours": 0})
 
 
 @respx.mock

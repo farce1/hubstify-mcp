@@ -1,4 +1,6 @@
+import pytest
 import respx
+from fastmcp.exceptions import ToolError
 from httpx import Response
 
 from tests._helpers import BASE
@@ -29,18 +31,18 @@ async def test_hubstaff_get_passes_params(tool_context):
 
 
 async def test_hubstaff_get_rejects_disallowed_prefix(tool_context):
-    text = await _call("hubstaff_get", {"path": "webhooks"})
-    assert text.startswith("Error:")
+    with pytest.raises(ToolError):
+        await _call("hubstaff_get", {"path": "webhooks"})
 
 
 @respx.mock
 async def test_hubstaff_get_blocks_path_traversal(tool_context):
     webhooks = respx.get(f"{BASE}/webhooks").mock(return_value=Response(200, json={}))
-    text = await _call("hubstaff_get", {"path": "users/../webhooks"})
-    assert text.startswith("Error:")
+    with pytest.raises(ToolError):
+        await _call("hubstaff_get", {"path": "users/../webhooks"})
     assert not webhooks.called
 
 
 async def test_hubstaff_get_blocks_encoded_traversal(tool_context):
-    text = await _call("hubstaff_get", {"path": "organizations/..%2f..%2ffoo"})
-    assert text.startswith("Error:")
+    with pytest.raises(ToolError):
+        await _call("hubstaff_get", {"path": "organizations/..%2f..%2ffoo"})

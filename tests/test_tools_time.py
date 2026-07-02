@@ -1,6 +1,8 @@
 from urllib.parse import unquote
 
+import pytest
 import respx
+from fastmcp.exceptions import ToolError
 from httpx import Response
 
 from tests._helpers import BASE, mock_me, mock_projects
@@ -123,9 +125,8 @@ async def test_get_timesheet_sorts_projects_by_duration(tool_context):
 
 @respx.mock
 async def test_get_timesheet_invalid_period_is_user_error(tool_context):
-    text = await _call("get_timesheet", {"organization_id": 9, "period": "fortnight"})
-    assert text.startswith("Error:")
-    assert "fortnight" in text
+    with pytest.raises(ToolError, match="fortnight"):
+        await _call("get_timesheet", {"organization_id": 9, "period": "fortnight"})
 
 
 @respx.mock

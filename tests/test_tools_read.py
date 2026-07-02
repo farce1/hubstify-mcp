@@ -1,4 +1,6 @@
+import pytest
 import respx
+from fastmcp.exceptions import ToolError
 from httpx import Response
 
 from tests._helpers import BASE
@@ -124,8 +126,7 @@ async def test_get_teams(tool_context):
 
 
 @respx.mock
-async def test_tool_surfaces_api_error_as_message(tool_context):
+async def test_tool_surfaces_api_error_as_tool_error(tool_context):
     respx.get(f"{BASE}/users/me").mock(return_value=Response(403, json={"error": "forbidden"}))
-    text = await _call("get_current_user", {})
-    assert text.startswith("Error:")
-    assert "403" in text
+    with pytest.raises(ToolError, match="403"):
+        await _call("get_current_user", {})

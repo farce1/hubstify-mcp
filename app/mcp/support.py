@@ -1,30 +1,35 @@
 import functools
 import logging
 from collections.abc import Awaitable, Callable
+from typing import TypeVar
+
+from fastmcp.exceptions import ToolError
 
 from app.domain.value_objects import Duration
 from app.hubstaff.errors import HubstaffError
 
 logger = logging.getLogger(__name__)
 
+T = TypeVar("T")
 
-def safe(func: Callable[..., Awaitable[str]]) -> Callable[..., Awaitable[str]]:
-    """Turn expected Hubstaff/input failures into a readable tool message.
 
-    Hubstaff errors are expected and returned as-is. Other ValueErrors
-    (bad user input, or an unexpected response shape) are logged before being
-    surfaced, so they are diagnosable rather than silently masked.
+def safe(func: Callable[..., Awaitable[T]]) -> Callable[..., Awaitable[T]]:
+    """Surface expected Hubstaff/input failures as a ToolError (isError=true).
+
+    Hubstaff errors are expected. Other ValueErrors (bad user input, or an
+    unexpected response shape) are logged before being surfaced, so they are
+    diagnosable rather than silently masked. The readable message is preserved.
     """
 
     @functools.wraps(func)
-    async def wrapper(*args, **kwargs) -> str:
+    async def wrapper(*args, **kwargs) -> T:
         try:
             return await func(*args, **kwargs)
         except HubstaffError as exc:
-            return f"Error: {exc}"
+            raise ToolError(str(exc)) from exc
         except ValueError as exc:
-            logger.warning("Tool %s returned an error: %s", getattr(func, "__name__", "tool"), exc)
-            return f"Error: {exc}"
+            logger.warning("Tool %s failed: %s", getattr(func, "__name__", "tool"), exc)
+            raise ToolError(str(exc)) from exc
 
     return wrapper
 
