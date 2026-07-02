@@ -129,3 +129,15 @@ async def test_timesheet_service_summary_fetches_and_assembles(api):
     timesheet = await TimesheetService(ActivityRepository(api)).summary(9, 7, date_range)
     assert timesheet.user_id == 7
     assert timesheet.total.seconds == 3600
+
+
+@respx.mock
+async def test_timesheet_service_summary_forwards_project_filter(api):
+    route = respx.get(f"{BASE}/organizations/9/activities/daily").mock(
+        return_value=Response(200, json={"daily_activities": [], "pagination": {}}),
+    )
+    date_range = DateRange(start=date(2026, 6, 1), stop=date(2026, 6, 2))
+    await TimesheetService(ActivityRepository(api)).summary(9, 7, date_range, project_ids=[3])
+    url = str(route.calls.last.request.url)
+    assert "user_ids=7" in url
+    assert "project_ids=3" in url

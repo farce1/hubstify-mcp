@@ -23,6 +23,17 @@ class TimesheetService:
     def __init__(self, activities: ActivityRepository):
         self._activities = activities
 
-    async def summary(self, organization_id: int, user_id: int, date_range: DateRange) -> Timesheet:
-        daily = await self._activities.daily(organization_id, date_range, user_ids=[user_id])
+    async def summary(
+        self,
+        organization_id: int,
+        user_id: int,
+        date_range: DateRange,
+        project_ids: list[int] | None = None,
+    ) -> Timesheet:
+        daily = await self._activities.daily(
+            organization_id,
+            date_range,
+            user_ids=[user_id],
+            project_ids=project_ids,
+        )
         return build_timesheet(user_id, date_range, daily)

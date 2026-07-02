@@ -21,3 +21,11 @@ class Timesheet(BaseModel):
     @property
     def total(self) -> Duration:
         return Duration(seconds=sum(line.duration.seconds for line in self.lines))
+
+    def by_project(self) -> list[tuple[int | None, Duration]]:
+        """Collapse per-day lines into per-project totals, longest first."""
+        totals: dict[int | None, int] = {}
+        for line in self.lines:
+            totals[line.project_id] = totals.get(line.project_id, 0) + line.duration.seconds
+        ordered = sorted(totals.items(), key=lambda item: -item[1])
+        return [(project_id, Duration(seconds=seconds)) for project_id, seconds in ordered]

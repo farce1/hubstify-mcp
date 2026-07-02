@@ -75,7 +75,7 @@ env = { HUBSTAFF_PERSONAL_ACCESS_TOKEN = "your_pat_here" }
 **3. Try it** — ask your assistant:
 
 - *"Who am I on Hubstaff?"* → `get_current_user`
-- *"Show my tracked time this week."* → `get_time_entries`
+- *"Show my tracked time this week."* → `get_tracked_time`
 - *"Give me my timesheet summary for last month."* → `get_timesheet`
 - *"What projects and tasks am I assigned to?"* → `get_projects` + `get_tasks`
 - *"Log 2 hours to project Acme today with note 'API integration'."* → `log_time`
@@ -90,7 +90,7 @@ env = { HUBSTAFF_PERSONAL_ACCESS_TOKEN = "your_pat_here" }
 | `get_tasks` | read | Tasks in a project |
 | `get_members` | read | Members of an organization |
 | `get_teams` | read | Teams in an organization |
-| `get_time_entries` | read | Your tracked time per day for a period (optional project filter) |
+| `get_tracked_time` | read | Your tracked time per day for a period (optional project filter) |
 | `get_timesheet` | read | Your tracked time summarised per project for a period |
 | `log_time` | create | Create a manual time entry for yourself |
 | `create_task` | create | Create a task in a project |

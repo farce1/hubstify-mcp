@@ -94,3 +94,17 @@ def test_timesheet_total_sums_line_durations():
         ],
     )
     assert timesheet.total.seconds == 5400
+
+
+def test_timesheet_by_project_aggregates_and_sorts_by_duration_desc():
+    timesheet = Timesheet(
+        range=DateRange(start=date(2026, 6, 1), stop=date(2026, 6, 2)),
+        user_id=7,
+        lines=[
+            TimesheetLine(day=date(2026, 6, 1), project_id=1, duration=Duration(seconds=600)),
+            TimesheetLine(day=date(2026, 6, 2), project_id=1, duration=Duration(seconds=600)),
+            TimesheetLine(day=date(2026, 6, 1), project_id=2, duration=Duration(seconds=3600)),
+        ],
+    )
+    by_project = timesheet.by_project()
+    assert [(pid, d.seconds) for pid, d in by_project] == [(2, 3600), (1, 1200)]
