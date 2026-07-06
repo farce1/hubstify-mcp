@@ -118,7 +118,7 @@ env.bak/
 venv.bak/
 .env
 
-# Hubstaff MCP — persisted token cache (rotating refresh + access token)
+# Hubstaff MCP - persisted token cache (rotating refresh + access token)
 tokens.json
 
 # Internal design docs (not shipped)

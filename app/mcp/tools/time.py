@@ -63,7 +63,7 @@ async def get_timesheet(period: str = "this_week", organization_id: int | None =
 
 def _header(label: str, period: str, timesheet: Timesheet) -> str:
     span = f"{timesheet.range.start}..{timesheet.range.stop}"
-    return f"{label} for {period} ({span}) — total {hours(timesheet.total.seconds)}:"
+    return f"{label} for {period} ({span}), total {hours(timesheet.total.seconds)}:"
 
 
 def _project_label(project_id: int | None, names: dict[int, str]) -> str:

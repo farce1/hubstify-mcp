@@ -3,7 +3,7 @@
 A [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server for
 [Hubstaff](https://hubstaff.com). Operate your Hubstaff organizations, projects,
 tasks, members, tracked-time activities and timesheets through any MCP-compatible
-LLM client — read your timesheet, log time, and inspect your team in natural
+LLM client. Read your timesheet, log time, and inspect your team in natural
 language.
 
 Built on [FastMCP](https://gofastmcp.com) and scaffolded from
@@ -12,7 +12,7 @@ Built on [FastMCP](https://gofastmcp.com) and scaffolded from
 ## Connect it to your LLM
 
 You need two things: a Hubstaff Personal Access Token, and one config entry in your
-client. **No clone required** — [`uv`](https://docs.astral.sh/uv/) runs the server
+client. **No clone required**: [`uv`](https://docs.astral.sh/uv/) runs the server
 straight from GitHub.
 
 **1. Get a Personal Access Token** at
@@ -72,7 +72,7 @@ env = { HUBSTAFF_PERSONAL_ACCESS_TOKEN = "your_pat_here" }
 > command everywhere above with
 > `uv --directory /absolute/path/to/hubstify-mcp run hubstaff-mcp`.
 
-**3. Try it** — ask your assistant:
+**3. Try it.** Ask your assistant:
 
 - *"Who am I on Hubstaff?"* → `get_current_user`
 - *"Show my tracked time this week."* → `get_tracked_time`
@@ -98,7 +98,7 @@ env = { HUBSTAFF_PERSONAL_ACCESS_TOKEN = "your_pat_here" }
 
 > **Hubstaff v2 limitation:** time entries are **create-only**. The v2 API has no
 > endpoint to edit or delete a tracked-time entry, so this server intentionally does
-> not expose update/delete tools — do that in the Hubstaff web app. Tracked time is
+> not expose update/delete tools; do that in the Hubstaff web app. Tracked time is
 > read via daily activities.
 
 ## Highlights
@@ -128,12 +128,12 @@ git clone https://github.com/farce1/hubstify-mcp.git && cd hubstify-mcp && uv sy
 
 | Variable | Required | Default | Description |
 | --- | --- | --- | --- |
-| `HUBSTAFF_PERSONAL_ACCESS_TOKEN` | ✅ | — | Your Hubstaff Personal Access Token |
-| `HUBSTAFF_TOKEN_STORE` | — | `~/.hubstaff-mcp/tokens.json` | Where the rotated token cache is persisted |
-| `HUBSTAFF_DEFAULT_ORGANIZATION_ID` | — | first org | Organization id used when a tool isn't given one |
-| `MCP_TRANSPORT` | — | `stdio` | `stdio` for local clients, or `http` to self-host (see below) |
-| `MCP_HOST` | — | `127.0.0.1` | Bind address when `MCP_TRANSPORT=http` |
-| `MCP_PORT` | — | `8000` | Port when `MCP_TRANSPORT=http` |
+| `HUBSTAFF_PERSONAL_ACCESS_TOKEN` | ✅ | - | Your Hubstaff Personal Access Token |
+| `HUBSTAFF_TOKEN_STORE` | - | `~/.hubstaff-mcp/tokens.json` | Where the rotated token cache is persisted |
+| `HUBSTAFF_DEFAULT_ORGANIZATION_ID` | - | first org | Organization id used when a tool isn't given one |
+| `MCP_TRANSPORT` | - | `stdio` | `stdio` for local clients, or `http` to self-host (see below) |
+| `MCP_HOST` | - | `127.0.0.1` | Bind address when `MCP_TRANSPORT=http` |
+| `MCP_PORT` | - | `8000` | Port when `MCP_TRANSPORT=http` |
 
 > Hubstaff rotates the refresh token on every exchange; this server persists the
 > newest token (mode `0600`) so it survives restarts. If you revoke the token,
@@ -141,12 +141,12 @@ git clone https://github.com/farce1/hubstify-mcp.git && cd hubstify-mcp && uv sy
 
 ## Troubleshooting
 
-- **`HUBSTAFF_PERSONAL_ACCESS_TOKEN is not set`** — the env var didn't reach the
+- **`HUBSTAFF_PERSONAL_ACCESS_TOKEN is not set`**: the env var didn't reach the
   server; check the `env` block in your client config.
-- **Auth errors after it worked before** — the token may have been revoked or
+- **Auth errors after it worked before**: the token may have been revoked or
   rotated out of band. Update `HUBSTAFF_PERSONAL_ACCESS_TOKEN` and delete
   `~/.hubstaff-mcp/tokens.json`.
-- **Wrong day for "today"/"this week"** — the server uses your Hubstaff account's
+- **Wrong day for "today"/"this week"**: the server uses your Hubstaff account's
   timezone; check it under your Hubstaff profile settings.
 
 ## Self-hosting over HTTP
@@ -163,7 +163,7 @@ The endpoint is then `http://<host>:<port>/mcp`, which any HTTP-capable MCP clie
 can connect to.
 
 > ⚠️ **Single-user only.** The server acts as the *one* identity behind
-> `HUBSTAFF_PERSONAL_ACCESS_TOKEN` — every request reads and writes that account's
+> `HUBSTAFF_PERSONAL_ACCESS_TOKEN`; every request reads and writes that account's
 > Hubstaff data. Do **not** expose this endpoint to other people or the public
 > internet; keep it bound to localhost or your private network and put your own
 > authentication in front of it. Multi-tenant hosting (each user with their own
@@ -194,4 +194,4 @@ app/
 
 ## License
 
-MIT — see [LICENSE](./LICENSE).
+MIT. See [LICENSE](./LICENSE).

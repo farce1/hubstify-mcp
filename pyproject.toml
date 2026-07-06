@@ -1,7 +1,7 @@
 [project]
 name = "hubstaff-mcp"
 version = "0.1.0"
-description = "Hubstaff MCP server — operate Hubstaff time tracking, projects, tasks and timesheets through any LLM"
+description = "Hubstaff MCP server - operate Hubstaff time tracking, projects, tasks and timesheets through any LLM"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
