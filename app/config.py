@@ -1,6 +1,5 @@
 from functools import lru_cache
 from pathlib import Path
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -27,19 +26,6 @@ class Settings(BaseSettings):
     hubstaff_token_url: str = "https://account.hubstaff.com/access_tokens"
     # Organization used when a tool isn't given one. Defaults to the first one returned.
     hubstaff_default_organization_id: int | None = None
-
-    default_timezone: str = "UTC"
-
-    @field_validator("default_timezone")
-    @classmethod
-    def _validate_timezone(cls, value: str) -> str:
-        try:
-            ZoneInfo(value)
-        except (ZoneInfoNotFoundError, ValueError) as exc:
-            raise ValueError(
-                f"Invalid default_timezone {value!r}; use an IANA name like 'UTC' or 'Europe/Warsaw'"
-            ) from exc
-        return value
 
     @field_validator("mcp_transport")
     @classmethod

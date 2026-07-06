@@ -131,7 +131,6 @@ git clone https://github.com/farce1/hubstify-mcp.git && cd hubstify-mcp && uv sy
 | `HUBSTAFF_PERSONAL_ACCESS_TOKEN` | ✅ | — | Your Hubstaff Personal Access Token |
 | `HUBSTAFF_TOKEN_STORE` | — | `~/.hubstaff-mcp/tokens.json` | Where the rotated token cache is persisted |
 | `HUBSTAFF_DEFAULT_ORGANIZATION_ID` | — | first org | Organization id used when a tool isn't given one |
-| `DEFAULT_TIMEZONE` | — | `UTC` | IANA timezone for resolving "today"/"this week" and localizing naive start times |
 | `MCP_TRANSPORT` | — | `stdio` | `stdio` for local clients, or `http` to self-host (see below) |
 | `MCP_HOST` | — | `127.0.0.1` | Bind address when `MCP_TRANSPORT=http` |
 | `MCP_PORT` | — | `8000` | Port when `MCP_TRANSPORT=http` |
@@ -147,8 +146,8 @@ git clone https://github.com/farce1/hubstify-mcp.git && cd hubstify-mcp && uv sy
 - **Auth errors after it worked before** — the token may have been revoked or
   rotated out of band. Update `HUBSTAFF_PERSONAL_ACCESS_TOKEN` and delete
   `~/.hubstaff-mcp/tokens.json`.
-- **Wrong day for "today"/"this week"** — set `DEFAULT_TIMEZONE` (e.g.
-  `Europe/Warsaw`); Hubstaff buckets daily activity by timezone.
+- **Wrong day for "today"/"this week"** — the server uses your Hubstaff account's
+  timezone; check it under your Hubstaff profile settings.
 
 ## Self-hosting over HTTP
 
