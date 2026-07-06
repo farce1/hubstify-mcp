@@ -39,15 +39,21 @@ async def test_log_time_converts_decimal_hours_and_defaults_start(tool_context):
 
 
 @respx.mock
-async def test_log_time_localizes_naive_start_time_to_configured_zone(tool_context, monkeypatch):
-    import app.config
-
-    monkeypatch.setattr(app.config.settings, "default_timezone", "Europe/Warsaw")
-    _mock_me()
+async def test_log_time_localizes_naive_start_time_to_user_timezone(tool_context):
+    _mock_me(time_zone="Europe/Berlin")
     route = respx.post(f"{BASE}/users/7/time_entries").mock(return_value=Response(201, json={"success": True}))
     await _call("log_time", {"project_id": 1, "hours": 1, "start_time": "2026-06-30T09:00:00"})
     body = json.loads(route.calls.last.request.content)
-    assert body["start_time"] == "2026-06-30T09:00:00+02:00"  # CEST (DST) for Warsaw in summer
+    assert body["start_time"] == "2026-06-30T09:00:00+02:00"  # CEST (DST) for Berlin in summer
+
+
+@respx.mock
+async def test_log_time_falls_back_to_utc_when_account_has_no_timezone(tool_context):
+    _mock_me()  # no time_zone on the account
+    route = respx.post(f"{BASE}/users/7/time_entries").mock(return_value=Response(201, json={"success": True}))
+    await _call("log_time", {"project_id": 1, "hours": 1, "start_time": "2026-06-30T09:00:00"})
+    body = json.loads(route.calls.last.request.content)
+    assert body["start_time"] == "2026-06-30T09:00:00+00:00"  # UTC fallback
 
 
 @respx.mock

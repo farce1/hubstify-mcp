@@ -3,18 +3,17 @@ from zoneinfo import ZoneInfo
 
 from fastmcp import FastMCP
 
-from app.config import settings
 from app.domain.timesheet import Timesheet
 from app.mcp.context import Context, get_context
 from app.mcp.support import bullet_list, hours, safe
-from app.services.time_service import resolve_range
+from app.services.time_service import ensure_valid_period, resolve_range
 
 time_router = FastMCP(name="Time")
 
 
-def _today() -> date:
-    # Resolve "today" in the configured timezone; Hubstaff buckets daily activity by org tz.
-    return datetime.now(ZoneInfo(settings.default_timezone)).date()
+def _today(tz: ZoneInfo) -> date:
+    # Resolve "today" in the user's timezone; Hubstaff buckets daily activity by that zone.
+    return datetime.now(tz).date()
 
 
 async def _fetch_timesheet(
@@ -22,8 +21,9 @@ async def _fetch_timesheet(
     organization_id: int | None,
     project_id: int | None = None,
 ) -> tuple[Context, int, Timesheet]:
-    date_range = resolve_range(period, _today())
+    ensure_valid_period(period)  # reject a bad period before any I/O
     ctx = get_context()
+    date_range = resolve_range(period, _today(await ctx.current_timezone()))
     org_id = organization_id if organization_id is not None else await ctx.default_organization_id()
     user_id = await ctx.current_user_id()
     project_ids = [project_id] if project_id is not None else None

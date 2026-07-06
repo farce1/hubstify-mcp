@@ -5,13 +5,25 @@ from app.domain.value_objects import DateRange
 _PERIODS = ("today", "yesterday", "this_week", "last_week", "this_month", "last_month")
 
 
+def ensure_valid_period(period: str) -> str:
+    """Normalize a human period and raise if it isn't one we support.
+
+    Kept separate from resolve_range so callers can reject a bad period before doing
+    any I/O (e.g. resolving the user's timezone).
+    """
+    key = period.strip().lower().replace(" ", "_")
+    if key not in _PERIODS:
+        raise ValueError(f"Unknown period {period!r}. Use one of: {', '.join(_PERIODS)}.")
+    return key
+
+
 def resolve_range(period: str, today: date) -> DateRange:
     """Turn a human period ("today", "this week", "last month", ...) into a DateRange.
 
     Current periods are to-date (e.g. this_week = Monday..today); past periods are
     the full calendar span. All resolved ranges stay within the 31-day daily-activity cap.
     """
-    key = period.strip().lower().replace(" ", "_")
+    key = ensure_valid_period(period)
     if key == "today":
         return DateRange(start=today, stop=today)
     if key == "yesterday":
@@ -27,4 +39,4 @@ def resolve_range(period: str, today: date) -> DateRange:
     if key == "last_month":
         last_day_prev = today.replace(day=1) - timedelta(days=1)
         return DateRange(start=last_day_prev.replace(day=1), stop=last_day_prev)
-    raise ValueError(f"Unknown period {period!r}. Use one of: {', '.join(_PERIODS)}.")
+    raise AssertionError(f"unreachable: {key}")  # ensure_valid_period guarantees a known key

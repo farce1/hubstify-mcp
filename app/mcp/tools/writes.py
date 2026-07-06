@@ -1,12 +1,10 @@
 from datetime import datetime
-from zoneinfo import ZoneInfo
 
 from fastmcp import FastMCP
 
-from app.config import settings
 from app.domain.time_entry import NewTimeEntry
 from app.domain.value_objects import Duration
-from app.mcp.context import get_context
+from app.mcp.context import Context, get_context
 from app.mcp.support import safe
 
 writes_router = FastMCP(name="Writes")
@@ -29,7 +27,8 @@ async def log_time(
     if hours <= 0:
         raise ValueError("hours must be greater than 0")
     duration = Duration.from_hours(hours)
-    moment = _start_moment(start_time)
+    ctx = get_context()
+    moment = await _start_moment(start_time, ctx)
     entry = NewTimeEntry(
         project_id=project_id,
         start_time=moment,
@@ -38,7 +37,6 @@ async def log_time(
         note=note,
         billable=billable,
     )
-    ctx = get_context()
     user_id = await ctx.current_user_id()
     await ctx.time_entries.create(user_id, entry)
     return f"Logged {duration.human} to project {project_id} starting {moment.isoformat()}."
@@ -57,9 +55,11 @@ async def create_task(
     return f"Created task '{task.summary}' (id {task.id}) in project {project_id}."
 
 
-def _start_moment(start_time: str | None) -> datetime:
-    tz = ZoneInfo(settings.default_timezone)
+async def _start_moment(start_time: str | None, ctx: Context) -> datetime:
+    # Parse first so malformed input fails fast, before any timezone lookup.
     if not start_time:
-        return datetime.now(tz)
+        return datetime.now(await ctx.current_timezone())
     moment = datetime.fromisoformat(start_time)
-    return moment if moment.tzinfo else moment.replace(tzinfo=tz)
+    if moment.tzinfo:
+        return moment
+    return moment.replace(tzinfo=await ctx.current_timezone())

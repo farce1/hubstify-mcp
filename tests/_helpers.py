@@ -13,8 +13,11 @@ async def call_tool(tool: str, args: dict | None = None) -> str:
     return result.content[0].text
 
 
-def mock_me(user_id: int = 7, name: str = "Jo"):
-    respx.get(f"{BASE}/users/me").mock(return_value=Response(200, json={"user": {"id": user_id, "name": name}}))
+def mock_me(user_id: int = 7, name: str = "Jo", time_zone: str | None = None):
+    user = {"id": user_id, "name": name}
+    if time_zone is not None:
+        user["time_zone"] = time_zone
+    respx.get(f"{BASE}/users/me").mock(return_value=Response(200, json={"user": user}))
 
 
 def mock_projects(org_id: int = 9, projects=None):

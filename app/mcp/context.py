@@ -1,6 +1,9 @@
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
 import httpx
 
 from app.config import settings
+from app.domain.user import User
 from app.hubstaff.auth import TokenManager
 from app.hubstaff.client import HubstaffClient
 from app.hubstaff.errors import HubstaffError
@@ -29,14 +32,25 @@ class Context:
         self.activities = ActivityRepository(client)
         self.time_entries = TimeEntryRepository(client)
         self.timesheets = TimesheetService(self.activities)
-        self._current_user_id: int | None = None
+        self._current_user: User | None = None
+        self._current_timezone: ZoneInfo | None = None
         self._default_organization_id: int | None = None
         self._project_names: dict[int, dict[int, str]] = {}
 
+    async def current_user(self) -> User:
+        if self._current_user is None:
+            self._current_user = await self.users.get_current_user()
+        return self._current_user
+
     async def current_user_id(self) -> int:
-        if self._current_user_id is None:
-            self._current_user_id = (await self.users.get_current_user()).id
-        return self._current_user_id
+        return (await self.current_user()).id
+
+    async def current_timezone(self) -> ZoneInfo:
+        # Prefer the timezone on the Hubstaff account so logged times match what the
+        # user sees; fall back to the configured default only when it's absent/invalid.
+        if self._current_timezone is None:
+            self._current_timezone = _resolve_zone((await self.current_user()).time_zone)
+        return self._current_timezone
 
     async def default_organization_id(self) -> int:
         if self._default_organization_id is None:
@@ -54,6 +68,17 @@ class Context:
             projects = await self.projects.list_projects(organization_id, status="all")
             self._project_names[organization_id] = {project.id: project.name for project in projects}
         return self._project_names[organization_id]
+
+
+def _resolve_zone(name: str | None) -> ZoneInfo:
+    # The Hubstaff account timezone is the source of truth; UTC is only a last resort
+    # for the rare account that has none set (or an unrecognized name).
+    if name:
+        try:
+            return ZoneInfo(name)
+        except (ZoneInfoNotFoundError, ValueError):
+            pass
+    return ZoneInfo("UTC")
 
 
 def build_context() -> Context:
