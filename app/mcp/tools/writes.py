@@ -38,7 +38,7 @@ async def log_time(
         note=note,
         billable=billable,
     )
-    user_id = await ctx.current_user_id()
+    user_id = (await ctx.current_user()).id
     await api.create_time_entry(ctx.client, user_id, entry)
     return f"Logged {format_hours(seconds)} to project {project_id} starting {moment.isoformat()}."
 

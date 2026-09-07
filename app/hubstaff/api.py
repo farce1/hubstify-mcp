@@ -1,14 +1,7 @@
 from typing import Any
 
-from app.domain.activity import DailyActivity
-from app.domain.member import OrganizationMember
-from app.domain.organization import Organization
-from app.domain.project import Project
-from app.domain.task import Task
-from app.domain.team import Team
+from app.domain.models import DailyActivity, DateRange, Organization, OrganizationMember, Project, Task, Team, User
 from app.domain.time_entry import NewTimeEntry
-from app.domain.user import User
-from app.domain.value_objects import DateRange
 from app.hubstaff.client import HubstaffClient
 from app.hubstaff.errors import HubstaffAPIError
 
@@ -61,11 +54,8 @@ async def create_task(
     details: str | None = None,
     assignee_ids: list[int] | None = None,
 ) -> Task:
-    body: dict[str, object] = {"summary": summary}
-    if details is not None:
-        body["details"] = details
-    if assignee_ids is not None:
-        body["assignee_ids"] = assignee_ids
+    fields = {"summary": summary, "details": details, "assignee_ids": assignee_ids}
+    body = {key: value for key, value in fields.items() if value is not None}
     data = await client.request("POST", f"/projects/{project_id}/tasks", json=body)
     # Create response envelope is not firmly documented; tolerate flat or {"task": ...}.
     payload = data.get("task", data) if isinstance(data, dict) else data

@@ -16,6 +16,10 @@ logger = logging.getLogger(__name__)
 # Refresh this many seconds before the access token's stated expiry.
 _EXPIRY_SKEW = 60
 _DEFAULT_LIFETIME = 86400
+_MISSING_TOKEN = (
+    "HUBSTAFF_PERSONAL_ACCESS_TOKEN is not set. Create a Personal Access Token at "
+    "https://developer.hubstaff.com/account/personal-access-tokens"
+)
 
 
 class TokenSet(BaseModel):
@@ -40,13 +44,11 @@ class TokenManager:
         token_url: str,
         token_store: Path,
         now: Callable[[], float] = time.time,
-        missing_token_hint: str = "No Hubstaff refresh token is configured.",
     ):
         self._http = http
         self._token_url = token_url
         self._token_store = Path(token_store).expanduser()
         self._now = now
-        self._missing_token_hint = missing_token_hint
         self._lock = asyncio.Lock()
         self._token = self._load() or TokenSet(refresh_token=refresh_token)
 
@@ -69,7 +71,7 @@ class TokenManager:
 
     async def _exchange(self) -> str:
         if not self._token.refresh_token:
-            raise HubstaffAuthError(self._missing_token_hint)
+            raise HubstaffAuthError(_MISSING_TOKEN)
         try:
             response = await self._http.post(
                 self._token_url,
@@ -126,21 +128,22 @@ class TokenManager:
 
     @staticmethod
     def _parse_body(response: httpx.Response) -> dict:
-        try:
-            data = response.json()
-        except ValueError as exc:
-            raise HubstaffAuthError("Hubstaff token response was not valid JSON") from exc
-        if not isinstance(data, dict):
-            raise HubstaffAuthError("Hubstaff token response had an unexpected shape")
-        return data
+        body = _json_dict(response)
+        if body is None:
+            raise HubstaffAuthError("Hubstaff token response was not valid JSON or had an unexpected shape")
+        return body
 
     @staticmethod
     def _describe_failure(response: httpx.Response) -> str:
-        try:
-            payload = response.json()
-        except ValueError:
-            payload = {}
-        if not isinstance(payload, dict):
-            payload = {}
-        reason = payload.get("error_description") or payload.get("error") or response.text
+        body = _json_dict(response) or {}
+        reason = body.get("error_description") or body.get("error") or response.text
         return f"Hubstaff token refresh failed ({response.status_code}): {reason}"
+
+
+def _json_dict(response: httpx.Response) -> dict | None:
+    """The response body as a dict, or None if it is not JSON or not an object."""
+    try:
+        body = response.json()
+    except ValueError:
+        return None
+    return body if isinstance(body, dict) else None

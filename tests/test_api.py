@@ -6,8 +6,8 @@ import pytest
 import respx
 from httpx import Response
 
+from app.domain.models import DateRange
 from app.domain.time_entry import NewTimeEntry
-from app.domain.value_objects import DateRange
 from app.hubstaff.api import (
     create_task,
     create_time_entry,
@@ -45,18 +45,6 @@ async def test_list_organizations(api):
     )
     orgs = await list_organizations(api)
     assert [o.name for o in orgs] == ["Acme"]
-
-
-@respx.mock
-async def test_list_aggregates_paginated_results(api):
-    respx.get(f"{BASE}/organizations").mock(
-        side_effect=[
-            Response(200, json={"organizations": [{"id": 1, "name": "Acme"}], "pagination": {"next_page_start_id": 2}}),
-            Response(200, json={"organizations": [{"id": 2, "name": "Beta"}], "pagination": {}}),
-        ],
-    )
-    orgs = await list_organizations(api)
-    assert [o.name for o in orgs] == ["Acme", "Beta"]
 
 
 @respx.mock

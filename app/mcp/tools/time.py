@@ -6,8 +6,7 @@ from fastmcp import FastMCP
 from app.domain.timesheet import Timesheet
 from app.mcp.context import Context, get_context
 from app.mcp.support import bullet_list, hours, safe
-from app.services.time_service import parse_period
-from app.services.timesheet_service import fetch_timesheet
+from app.services import fetch_timesheet, parse_period
 
 time_router = FastMCP(name="Time")
 
@@ -26,7 +25,7 @@ async def _timesheet(
     ctx = get_context()
     date_range = build_range(_today(await ctx.current_timezone()))
     org_id = organization_id if organization_id is not None else await ctx.default_organization_id()
-    user_id = await ctx.current_user_id()
+    user_id = (await ctx.current_user()).id
     project_ids = [project_id] if project_id is not None else None
     timesheet = await fetch_timesheet(ctx.client, org_id, user_id, date_range, project_ids=project_ids)
     return ctx, org_id, timesheet

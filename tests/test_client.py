@@ -217,17 +217,16 @@ async def test_get_list_stops_on_cursor_cycle():
 
 
 @respx.mock
-async def test_get_list_paginates_via_page_start_id_field():
-    route = respx.get(f"{BASE}/x").mock(
+async def test_get_list_stops_when_last_page_omits_pagination():
+    respx.get(f"{BASE}/x").mock(
         side_effect=[
-            Response(200, json={"items": [{"id": 1}], "pagination": {"page_start_id": 7}}),
-            Response(200, json={"items": [{"id": 2}], "pagination": {}}),
+            Response(200, json={"items": [{"id": 1}], "pagination": {"next_page_start_id": 7}}),
+            Response(200, json={"items": [{"id": 2}]}),  # last page: Hubstaff drops the envelope
         ],
     )
     async with httpx.AsyncClient() as http:
         items = await _client(http).get_list("/x", "items")
     assert [i["id"] for i in items] == [1, 2]
-    assert "page_start_id=7" in str(route.calls.last.request.url)
 
 
 @respx.mock

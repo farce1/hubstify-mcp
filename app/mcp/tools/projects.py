@@ -1,6 +1,6 @@
 from fastmcp import FastMCP
 
-from app.domain.project import Project
+from app.domain.models import Project
 from app.hubstaff import api
 from app.mcp.context import get_context
 from app.mcp.support import bullet_list, safe

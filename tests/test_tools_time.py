@@ -5,8 +5,8 @@ import respx
 from fastmcp.exceptions import ToolError
 from httpx import Response
 
-from tests._helpers import BASE, mock_me, mock_projects
-from tests._helpers import call_tool as _call
+from tests.conftest import BASE, mock_me, mock_projects
+from tests.conftest import call_tool as _call
 
 
 def _mock_identity_and_projects():

@@ -4,10 +4,8 @@ import pytest
 import respx
 from httpx import Response
 
-from app.domain.activity import DailyActivity
-from app.domain.value_objects import DateRange
-from app.services.time_service import parse_period
-from app.services.timesheet_service import build_timesheet, fetch_timesheet
+from app.domain.models import DailyActivity, DateRange
+from app.services import build_timesheet, fetch_timesheet, parse_period
 
 BASE = "https://api.hubstaff.com/v2"
 
@@ -84,7 +82,7 @@ class TestBuildTimesheet:
             DailyActivity(date=date(2026, 6, 1), project_id=1, tracked=1800),
             DailyActivity(date=date(2026, 6, 2), project_id=2, tracked=900),
         ]
-        timesheet = build_timesheet(7, date_range, activities)
+        timesheet = build_timesheet(date_range, activities)
         assert timesheet.total == 6300
         assert len(timesheet.lines) == 2
         assert timesheet.lines[0].seconds == 5400
@@ -96,13 +94,13 @@ class TestBuildTimesheet:
             DailyActivity(date=date(2026, 6, 1), project_id=5, tracked=200),
             DailyActivity(date=date(2026, 6, 1), project_id=1, tracked=300),
         ]
-        timesheet = build_timesheet(7, date_range, activities)
+        timesheet = build_timesheet(date_range, activities)
         ordered = [(line.day, line.project_id) for line in timesheet.lines]
         assert ordered == [(date(2026, 6, 1), 1), (date(2026, 6, 1), 5), (date(2026, 6, 2), 2)]
 
     def test_empty(self):
         date_range = DateRange(start=date(2026, 6, 1), stop=date(2026, 6, 1))
-        timesheet = build_timesheet(7, date_range, [])
+        timesheet = build_timesheet(date_range, [])
         assert timesheet.lines == []
         assert timesheet.total == 0
 
@@ -112,7 +110,7 @@ class TestBuildTimesheet:
             DailyActivity(date=date(2026, 6, 1), project_id=3, tracked=600),
             DailyActivity(date=date(2026, 6, 1), project_id=None, tracked=300),
         ]
-        timesheet = build_timesheet(7, date_range, activities)
+        timesheet = build_timesheet(date_range, activities)
         assert len(timesheet.lines) == 2
         assert timesheet.lines[0].project_id is None  # None sorts before positive ids
         assert timesheet.lines[1].project_id == 3
@@ -131,7 +129,6 @@ async def test_timesheet_service_summary_fetches_and_assembles(api):
     )
     date_range = DateRange(start=date(2026, 6, 1), stop=date(2026, 6, 2))
     timesheet = await fetch_timesheet(api, 9, 7, date_range)
-    assert timesheet.user_id == 7
     assert timesheet.total == 3600
 
 

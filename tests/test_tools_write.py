@@ -5,9 +5,9 @@ import respx
 from fastmcp.exceptions import ToolError
 from httpx import Response
 
-from tests._helpers import BASE
-from tests._helpers import call_tool as _call
-from tests._helpers import mock_me as _mock_me
+from tests.conftest import BASE
+from tests.conftest import call_tool as _call
+from tests.conftest import mock_me as _mock_me
 
 
 @respx.mock

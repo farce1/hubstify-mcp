@@ -3,7 +3,7 @@ from datetime import date
 
 from pydantic import BaseModel, Field
 
-from app.domain.value_objects import DateRange
+from app.domain.models import DateRange
 
 
 class TimesheetLine(BaseModel):
@@ -16,7 +16,6 @@ class Timesheet(BaseModel):
     """Derived view: tracked time grouped by day and project over a date range."""
 
     range: DateRange
-    user_id: int
     lines: list[TimesheetLine] = Field(default_factory=list)
 
     @property

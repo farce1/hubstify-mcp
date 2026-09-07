@@ -1,7 +1,11 @@
+from collections import Counter
 from collections.abc import Callable
 from datetime import date, timedelta
 
-from app.domain.value_objects import DateRange
+from app.domain.models import DailyActivity, DateRange
+from app.domain.timesheet import Timesheet, TimesheetLine
+from app.hubstaff import api
+from app.hubstaff.client import HubstaffClient
 
 # Current periods are to-date (this_week = Monday..today); past periods are the full
 # calendar span. Every range stays within Hubstaff's 31-day daily-activity cap.
@@ -30,3 +34,32 @@ def parse_period(period: str) -> Callable[[date], DateRange]:
     if key not in _PERIODS:
         raise ValueError(f"Unknown period {period!r}. Use one of: {', '.join(_PERIODS)}.")
     return _PERIODS[key]
+
+
+def build_timesheet(date_range: DateRange, activities: list[DailyActivity]) -> Timesheet:
+    """Group daily activities by day and project into a Timesheet projection."""
+    totals: Counter[tuple[date, int | None]] = Counter()
+    for activity in activities:
+        totals[(activity.date, activity.project_id)] += activity.tracked
+    lines = [
+        TimesheetLine(day=day, project_id=project_id, seconds=seconds)
+        for (day, project_id), seconds in sorted(totals.items(), key=lambda item: (item[0][0], item[0][1] or 0))
+    ]
+    return Timesheet(range=date_range, lines=lines)
+
+
+async def fetch_timesheet(
+    client: HubstaffClient,
+    organization_id: int,
+    user_id: int,
+    date_range: DateRange,
+    project_ids: list[int] | None = None,
+) -> Timesheet:
+    daily = await api.daily_activities(
+        client,
+        organization_id,
+        date_range,
+        user_ids=[user_id],
+        project_ids=project_ids,
+    )
+    return build_timesheet(date_range, daily)

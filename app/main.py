@@ -3,7 +3,7 @@ from logging import INFO, basicConfig
 from fastmcp import FastMCP
 
 from app.config import settings
-from app.mcp.tools import identity, people, projects, raw, time, writes
+from app.mcp.tools import people, projects, raw, time, writes
 
 basicConfig(level=INFO, format="[%(asctime)s - %(name)s] (%(levelname)s) %(message)s")
 
@@ -11,7 +11,6 @@ basicConfig(level=INFO, format="[%(asctime)s - %(name)s] (%(levelname)s) %(messa
 mcp = FastMCP(name=settings.mcp_server_name)
 
 for router in (
-    identity.identity_router,
     projects.projects_router,
     people.people_router,
     time.time_router,

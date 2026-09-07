@@ -111,11 +111,12 @@ def _parse(response: httpx.Response) -> Any:
 
 
 def _next_cursor(page: dict) -> Any:
+    # Hubstaff sends {"next_page_start_id": N} while pages remain and omits the
+    # pagination object entirely on the last one.
     pagination = page.get("pagination")
     if not isinstance(pagination, dict):
         return None
-    nxt = pagination.get("next_page_start_id")
-    return nxt if nxt is not None else pagination.get("page_start_id")
+    return pagination.get("next_page_start_id")
 
 
 def _error(response: httpx.Response) -> HubstaffAPIError:

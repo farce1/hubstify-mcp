@@ -3,7 +3,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 import httpx
 
 from app.config import settings
-from app.domain.user import User
+from app.domain.models import User
 from app.hubstaff import api
 from app.hubstaff.auth import TokenManager
 from app.hubstaff.client import HubstaffClient
@@ -24,9 +24,6 @@ class Context:
         if self._current_user is None:
             self._current_user = await api.get_current_user(self.client)
         return self._current_user
-
-    async def current_user_id(self) -> int:
-        return (await self.current_user()).id
 
     async def current_timezone(self) -> ZoneInfo:
         # Prefer the timezone on the Hubstaff account so logged times match what the
@@ -73,10 +70,6 @@ def build_context() -> Context:
         refresh_token=settings.hubstaff_personal_access_token,
         token_url=settings.hubstaff_token_url,
         token_store=settings.hubstaff_token_store,
-        missing_token_hint=(
-            "HUBSTAFF_PERSONAL_ACCESS_TOKEN is not set. Create a Personal Access Token at "
-            "https://developer.hubstaff.com/account/personal-access-tokens"
-        ),
     )
     client = HubstaffClient(http=http, tokens=tokens, base_url=settings.hubstaff_api_base)
     return Context(client)

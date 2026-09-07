@@ -3,12 +3,9 @@ from datetime import date, datetime
 import pytest
 from pydantic import ValidationError
 
-from app.domain.activity import DailyActivity
-from app.domain.member import OrganizationMember
-from app.domain.project import Project
+from app.domain.models import DailyActivity, DateRange, OrganizationMember, Project
 from app.domain.time_entry import NewTimeEntry
 from app.domain.timesheet import Timesheet, TimesheetLine
-from app.domain.value_objects import DateRange
 
 
 def test_model_ignores_unknown_fields():
@@ -42,7 +39,6 @@ def test_new_time_entry_rejects_naive_start_time():
 def test_timesheet_total_sums_lines():
     timesheet = Timesheet(
         range=DateRange(start=date(2026, 6, 1), stop=date(2026, 6, 2)),
-        user_id=7,
         lines=[
             TimesheetLine(day=date(2026, 6, 1), project_id=1, seconds=3600),
             TimesheetLine(day=date(2026, 6, 2), project_id=2, seconds=1800),
@@ -54,7 +50,6 @@ def test_timesheet_total_sums_lines():
 def test_timesheet_by_project_aggregates_and_sorts_by_duration_desc():
     timesheet = Timesheet(
         range=DateRange(start=date(2026, 6, 1), stop=date(2026, 6, 2)),
-        user_id=7,
         lines=[
             TimesheetLine(day=date(2026, 6, 1), project_id=1, seconds=600),
             TimesheetLine(day=date(2026, 6, 2), project_id=1, seconds=600),
@@ -62,3 +57,13 @@ def test_timesheet_by_project_aggregates_and_sorts_by_duration_desc():
         ],
     )
     assert timesheet.by_project() == [(2, 3600), (1, 1200)]
+
+
+def test_date_range_allows_a_single_day():
+    date_range = DateRange(start=date(2026, 6, 30), stop=date(2026, 6, 30))
+    assert date_range.start == date_range.stop
+
+
+def test_start_after_stop_is_rejected():
+    with pytest.raises(ValidationError):
+        DateRange(start=date(2026, 6, 7), stop=date(2026, 6, 1))
