@@ -13,7 +13,3 @@ class HubstaffAPIError(HubstaffError):
         super().__init__(message)
         self.status = status
         self.body = body
-
-
-class HubstaffRateLimitError(HubstaffAPIError):
-    """Rate limit exceeded and retries were exhausted."""

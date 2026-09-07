@@ -6,4 +6,3 @@ class User(HubstaffModel):
     name: str
     email: str | None = None
     time_zone: str | None = None
-    status: str | None = None

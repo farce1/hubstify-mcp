@@ -5,7 +5,6 @@ from typing import TypeVar
 
 from fastmcp.exceptions import ToolError
 
-from app.domain.value_objects import Duration
 from app.hubstaff.errors import HubstaffError
 
 logger = logging.getLogger(__name__)
@@ -35,7 +34,13 @@ def safe(func: Callable[..., Awaitable[T]]) -> Callable[..., Awaitable[T]]:
 
 
 def hours(seconds: int) -> str:
-    return Duration(seconds=seconds).human
+    """Format a duration for humans: 9000 -> "2h 30m"."""
+    h, rem = divmod(seconds, 3600)
+    m = rem // 60
+    parts = [f"{h}h"] if h else []
+    if m or not parts:
+        parts.append(f"{m}m")
+    return " ".join(parts)
 
 
 def bullet_list(header: str, lines: list[str], empty: str) -> str:

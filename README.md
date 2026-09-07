@@ -49,8 +49,7 @@ Windows: `%APPDATA%\Claude\`). Cowork shares the same desktop MCP configuration:
 }
 ```
 
-Restart the app afterward. A ready-to-edit copy is in
-[`claude_desktop_config.example.json`](./claude_desktop_config.example.json).
+Restart the app afterward.
 
 ### Cursor
 

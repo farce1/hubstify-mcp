@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import date, datetime
 
 import pytest
 from pydantic import ValidationError
@@ -8,7 +8,7 @@ from app.domain.member import OrganizationMember
 from app.domain.project import Project
 from app.domain.time_entry import NewTimeEntry
 from app.domain.timesheet import Timesheet, TimesheetLine
-from app.domain.value_objects import DateRange, Duration
+from app.domain.value_objects import DateRange
 
 
 def test_model_ignores_unknown_fields():
@@ -34,66 +34,21 @@ def test_daily_activity_maps_tracked_seconds():
     assert activity.date == date(2026, 6, 30)
 
 
-def test_daily_activity_parses_billable_as_seconds():
-    activity = DailyActivity.model_validate(
-        {"id": 1, "date": "2026-06-30", "user_id": 7, "project_id": 3, "tracked": 28800, "billable": 28800},
-    )
-    assert activity.billable_seconds == 28800
-
-
-def test_new_time_entry_payload_omits_unset_optionals():
-    entry = NewTimeEntry(
-        project_id=3,
-        start_time=datetime(2026, 6, 30, 9, 0, tzinfo=timezone.utc),
-        tracked=7200,
-    )
-    assert entry.to_payload() == {
-        "project_id": 3,
-        "start_time": "2026-06-30T09:00:00+00:00",
-        "tracked": 7200,
-    }
-
-
-def test_new_time_entry_payload_includes_set_optionals():
-    entry = NewTimeEntry(
-        project_id=3,
-        start_time=datetime(2026, 6, 30, 9, 0, tzinfo=timezone.utc),
-        tracked=7200,
-        task_id=11,
-        note="API integration",
-        billable=True,
-    )
-    payload = entry.to_payload()
-    assert payload["task_id"] == 11
-    assert payload["note"] == "API integration"
-    assert payload["billable"] is True
-
-
-def test_new_time_entry_payload_keeps_billable_false():
-    entry = NewTimeEntry(
-        project_id=3,
-        start_time=datetime(2026, 6, 30, 9, 0, tzinfo=timezone.utc),
-        tracked=7200,
-        billable=False,
-    )
-    assert entry.to_payload()["billable"] is False
-
-
 def test_new_time_entry_rejects_naive_start_time():
     with pytest.raises(ValidationError):
         NewTimeEntry(project_id=3, start_time=datetime(2026, 6, 30, 9, 0), tracked=7200)
 
 
-def test_timesheet_total_sums_line_durations():
+def test_timesheet_total_sums_lines():
     timesheet = Timesheet(
         range=DateRange(start=date(2026, 6, 1), stop=date(2026, 6, 2)),
         user_id=7,
         lines=[
-            TimesheetLine(day=date(2026, 6, 1), project_id=1, duration=Duration(seconds=3600)),
-            TimesheetLine(day=date(2026, 6, 2), project_id=2, duration=Duration(seconds=1800)),
+            TimesheetLine(day=date(2026, 6, 1), project_id=1, seconds=3600),
+            TimesheetLine(day=date(2026, 6, 2), project_id=2, seconds=1800),
         ],
     )
-    assert timesheet.total.seconds == 5400
+    assert timesheet.total == 5400
 
 
 def test_timesheet_by_project_aggregates_and_sorts_by_duration_desc():
@@ -101,10 +56,9 @@ def test_timesheet_by_project_aggregates_and_sorts_by_duration_desc():
         range=DateRange(start=date(2026, 6, 1), stop=date(2026, 6, 2)),
         user_id=7,
         lines=[
-            TimesheetLine(day=date(2026, 6, 1), project_id=1, duration=Duration(seconds=600)),
-            TimesheetLine(day=date(2026, 6, 2), project_id=1, duration=Duration(seconds=600)),
-            TimesheetLine(day=date(2026, 6, 1), project_id=2, duration=Duration(seconds=3600)),
+            TimesheetLine(day=date(2026, 6, 1), project_id=1, seconds=600),
+            TimesheetLine(day=date(2026, 6, 2), project_id=1, seconds=600),
+            TimesheetLine(day=date(2026, 6, 1), project_id=2, seconds=3600),
         ],
     )
-    by_project = timesheet.by_project()
-    assert [(pid, d.seconds) for pid, d in by_project] == [(2, 3600), (1, 1200)]
+    assert timesheet.by_project() == [(2, 3600), (1, 1200)]

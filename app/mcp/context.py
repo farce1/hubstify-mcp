@@ -4,34 +4,17 @@ import httpx
 
 from app.config import settings
 from app.domain.user import User
+from app.hubstaff import api
 from app.hubstaff.auth import TokenManager
 from app.hubstaff.client import HubstaffClient
 from app.hubstaff.errors import HubstaffError
-from app.repositories.activity_repository import ActivityRepository
-from app.repositories.member_repository import MemberRepository
-from app.repositories.organization_repository import OrganizationRepository
-from app.repositories.project_repository import ProjectRepository
-from app.repositories.task_repository import TaskRepository
-from app.repositories.team_repository import TeamRepository
-from app.repositories.time_entry_repository import TimeEntryRepository
-from app.repositories.user_repository import UserRepository
-from app.services.timesheet_service import TimesheetService
 
 
 class Context:
-    """Wires the repositories and services over a single Hubstaff client."""
+    """Per-process cache of the lookups every tool repeats, over a single client."""
 
     def __init__(self, client: HubstaffClient):
         self.client = client
-        self.users = UserRepository(client)
-        self.organizations = OrganizationRepository(client)
-        self.projects = ProjectRepository(client)
-        self.tasks = TaskRepository(client)
-        self.members = MemberRepository(client)
-        self.teams = TeamRepository(client)
-        self.activities = ActivityRepository(client)
-        self.time_entries = TimeEntryRepository(client)
-        self.timesheets = TimesheetService(self.activities)
         self._current_user: User | None = None
         self._current_timezone: ZoneInfo | None = None
         self._default_organization_id: int | None = None
@@ -39,7 +22,7 @@ class Context:
 
     async def current_user(self) -> User:
         if self._current_user is None:
-            self._current_user = await self.users.get_current_user()
+            self._current_user = await api.get_current_user(self.client)
         return self._current_user
 
     async def current_user_id(self) -> int:
@@ -47,7 +30,7 @@ class Context:
 
     async def current_timezone(self) -> ZoneInfo:
         # Prefer the timezone on the Hubstaff account so logged times match what the
-        # user sees; fall back to the configured default only when it's absent/invalid.
+        # user sees; fall back to UTC only when it's absent/invalid.
         if self._current_timezone is None:
             self._current_timezone = _resolve_zone((await self.current_user()).time_zone)
         return self._current_timezone
@@ -57,7 +40,7 @@ class Context:
             if settings.hubstaff_default_organization_id is not None:
                 self._default_organization_id = settings.hubstaff_default_organization_id
             else:
-                organizations = await self.organizations.list_organizations()
+                organizations = await api.list_organizations(self.client)
                 if not organizations:
                     raise HubstaffError("No Hubstaff organizations are available for this account.")
                 self._default_organization_id = organizations[0].id
@@ -65,7 +48,7 @@ class Context:
 
     async def project_names(self, organization_id: int) -> dict[int, str]:
         if organization_id not in self._project_names:
-            projects = await self.projects.list_projects(organization_id, status="all")
+            projects = await api.list_projects(self.client, organization_id, status="all")
             self._project_names[organization_id] = {project.id: project.name for project in projects}
         return self._project_names[organization_id]
 

@@ -3,8 +3,9 @@ from datetime import datetime
 from fastmcp import FastMCP
 
 from app.domain.time_entry import NewTimeEntry
-from app.domain.value_objects import Duration
+from app.hubstaff import api
 from app.mcp.context import Context, get_context
+from app.mcp.support import hours as format_hours
 from app.mcp.support import safe
 
 writes_router = FastMCP(name="Writes")
@@ -26,20 +27,20 @@ async def log_time(
     """
     if hours <= 0:
         raise ValueError("hours must be greater than 0")
-    duration = Duration.from_hours(hours)
+    seconds = round(hours * 3600)
     ctx = get_context()
     moment = await _start_moment(start_time, ctx)
     entry = NewTimeEntry(
         project_id=project_id,
         start_time=moment,
-        tracked=duration.seconds,
+        tracked=seconds,
         task_id=task_id,
         note=note,
         billable=billable,
     )
     user_id = await ctx.current_user_id()
-    await ctx.time_entries.create(user_id, entry)
-    return f"Logged {duration.human} to project {project_id} starting {moment.isoformat()}."
+    await api.create_time_entry(ctx.client, user_id, entry)
+    return f"Logged {format_hours(seconds)} to project {project_id} starting {moment.isoformat()}."
 
 
 @writes_router.tool
@@ -51,7 +52,7 @@ async def create_task(
     assignee_ids: list[int] | None = None,
 ) -> str:
     """Create a task in a project."""
-    task = await get_context().tasks.create(project_id, summary, details, assignee_ids)
+    task = await api.create_task(get_context().client, project_id, summary, details, assignee_ids)
     return f"Created task '{task.summary}' (id {task.id}) in project {project_id}."
 
 

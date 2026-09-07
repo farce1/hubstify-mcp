@@ -1,6 +1,7 @@
 from fastmcp import FastMCP
 
 from app.domain.member import OrganizationMember
+from app.hubstaff import api
 from app.mcp.context import get_context
 from app.mcp.support import bullet_list, safe
 
@@ -13,7 +14,7 @@ async def get_members(organization_id: int | None = None) -> str:
     """List members of an organization (defaults to your default org)."""
     ctx = get_context()
     org_id = organization_id if organization_id is not None else await ctx.default_organization_id()
-    members = await ctx.members.list_members(org_id)
+    members = await api.list_members(ctx.client, org_id)
     lines = [_member_line(member) for member in members]
     return bullet_list(f"Members of organization {org_id}:", lines, "No members found.")
 
@@ -24,7 +25,7 @@ async def get_teams(organization_id: int | None = None) -> str:
     """List teams in an organization (defaults to your default org)."""
     ctx = get_context()
     org_id = organization_id if organization_id is not None else await ctx.default_organization_id()
-    teams = await ctx.teams.list_teams(org_id)
+    teams = await api.list_teams(ctx.client, org_id)
     lines = [f"{team.name} (id {team.id})" for team in teams]
     return bullet_list(f"Teams in organization {org_id}:", lines, "No teams found.")
 

@@ -1,7 +1,6 @@
-from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
-from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,7 +14,7 @@ class Settings(BaseSettings):
     mcp_server_name: str = "Hubstaff MCP"
 
     # Transport: "stdio" (default, for local MCP clients) or "http" (self-hosting).
-    mcp_transport: str = "stdio"
+    mcp_transport: Literal["stdio", "http"] = "stdio"
     mcp_host: str = "127.0.0.1"
     mcp_port: int = 8000
 
@@ -27,18 +26,5 @@ class Settings(BaseSettings):
     # Organization used when a tool isn't given one. Defaults to the first one returned.
     hubstaff_default_organization_id: int | None = None
 
-    @field_validator("mcp_transport")
-    @classmethod
-    def _validate_transport(cls, value: str) -> str:
-        allowed = {"stdio", "http"}
-        if value not in allowed:
-            raise ValueError(f"Invalid mcp_transport {value!r}; choose one of {sorted(allowed)}")
-        return value
 
-
-@lru_cache
-def get_settings() -> Settings:
-    return Settings()
-
-
-settings = get_settings()
+settings = Settings()

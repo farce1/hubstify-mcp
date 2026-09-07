@@ -6,4 +6,3 @@ class Project(HubstaffModel):
     name: str
     status: str | None = None
     billable: bool | None = None
-    client_id: int | None = None

@@ -4,7 +4,7 @@ import respx
 from httpx import Response
 
 from app.hubstaff.client import HubstaffClient
-from app.hubstaff.errors import HubstaffAPIError, HubstaffRateLimitError
+from app.hubstaff.errors import HubstaffAPIError
 
 BASE = "https://api.hubstaff.com/v2"
 
@@ -85,12 +85,13 @@ async def test_429_honors_retry_after_then_succeeds():
 
 
 @respx.mock
-async def test_429_exhausted_raises_rate_limit_error():
+async def test_429_exhausted_raises_api_error():
     respx.get(f"{BASE}/x").mock(return_value=Response(429, headers={"Retry-After": "1"}))
     spy = SleepSpy()
     async with httpx.AsyncClient() as http:
-        with pytest.raises(HubstaffRateLimitError):
+        with pytest.raises(HubstaffAPIError) as exc:
             await _client(http, sleep=spy, max_retries=2).request("GET", "/x")
+    assert exc.value.status == 429
     assert len(spy.calls) == 2
 
 
@@ -175,12 +176,12 @@ async def test_401_then_429_then_success():
 
 
 @respx.mock
-async def test_exhausted_5xx_raises_api_error_not_rate_limit():
+async def test_exhausted_5xx_raises_api_error():
     respx.get(f"{BASE}/x").mock(return_value=Response(500, json={"error": "boom"}))
     async with httpx.AsyncClient() as http:
         with pytest.raises(HubstaffAPIError) as exc:
             await _client(http, sleep=SleepSpy(), max_retries=1).request("GET", "/x")
-    assert not isinstance(exc.value, HubstaffRateLimitError)
+    assert exc.value.status == 500
 
 
 @respx.mock

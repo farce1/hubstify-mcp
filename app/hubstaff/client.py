@@ -4,7 +4,7 @@ from typing import Any, Protocol
 
 import httpx
 
-from app.hubstaff.errors import HubstaffAPIError, HubstaffRateLimitError
+from app.hubstaff.errors import HubstaffAPIError
 
 _BACKOFF_BASE = 0.5
 _BACKOFF_CAP = 30.0
@@ -128,6 +128,4 @@ def _error(response: httpx.Response) -> HubstaffAPIError:
     detail = (reason or response.reason_phrase)[:_MAX_REASON]
     where = f"{response.request.method} {response.request.url.path}"
     message = f"Hubstaff API {response.status_code} on {where}: {detail}"
-    if response.status_code == httpx.codes.TOO_MANY_REQUESTS:
-        return HubstaffRateLimitError(message, status=response.status_code, body=body)
     return HubstaffAPIError(message, status=response.status_code, body=body)

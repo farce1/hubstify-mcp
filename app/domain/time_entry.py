@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_serializer, field_validator
 
 
 class NewTimeEntry(BaseModel):
@@ -20,16 +20,8 @@ class NewTimeEntry(BaseModel):
             raise ValueError("start_time must be timezone-aware so Hubstaff records the correct moment")
         return value
 
-    def to_payload(self) -> dict[str, object]:
-        payload: dict[str, object] = {
-            "project_id": self.project_id,
-            "start_time": self.start_time.isoformat(),
-            "tracked": self.tracked,
-        }
-        if self.task_id is not None:
-            payload["task_id"] = self.task_id
-        if self.note is not None:
-            payload["note"] = self.note
-        if self.billable is not None:
-            payload["billable"] = self.billable
-        return payload
+    @field_serializer("start_time")
+    def _serialize_start_time(self, value: datetime) -> str:
+        # Hubstaff has only ever been sent offsets, never "Z"; keep the wire format
+        # identical to what these irreversible writes have always used.
+        return value.isoformat()
